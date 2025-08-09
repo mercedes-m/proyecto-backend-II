@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 
 const router = Router();
 
-const JWT_SECRET = 'tu_secreto_super_seguro'; // Mejor usar variable de entorno
+const JWT_SECRET = 'tu_secreto_super_seguro'; 
 const JWT_EXPIRES_IN = '1h'; // Duración del token
 
 // Login con Passport local
@@ -31,6 +31,9 @@ router.get('/current', (req, res, next) => {
     if (!user) {
       return res.status(401).json({ error: info?.message || 'Token inválido o expirado' });
     }
+
+    // Quitar password antes de enviar
+    const { password, ...userWithoutPassword } = user._doc;
 
     res.json({ user });
   })(req, res, next);
