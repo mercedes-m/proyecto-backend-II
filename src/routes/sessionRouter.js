@@ -23,10 +23,17 @@ router.post('/login', (req, res, next) => {
   })(req, res, next);
 });
 
-// Ruta para validar token y obtener usuario actual
-router.get('/current', passport.authenticate('current', { session: false }), (req, res) => {
-  // req.user viene de la estrategia current
-  res.json({ user: req.user });
+// Ruta para validar token y obtener usuario actual con manejo personalizado de error
+router.get('/current', (req, res, next) => {
+  passport.authenticate('current', { session: false }, (err, user, info) => {
+    if (err) return next(err);
+
+    if (!user) {
+      return res.status(401).json({ error: info?.message || 'Token inválido o expirado' });
+    }
+
+    res.json({ user });
+  })(req, res, next);
 });
 
 export default router;
