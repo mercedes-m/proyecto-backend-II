@@ -11,7 +11,6 @@ router.post('/', async (req, res) => {
   try {
     const userData = req.body;
 
-    // Encriptar la contraseña antes de guardar
     if (userData.password) {
       const saltRounds = 10;
       userData.password = bcrypt.hashSync(userData.password, saltRounds);
@@ -39,7 +38,7 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * Buscar usuario por email (poner antes de la búsqueda por ID)
+ * Buscar usuario por email (antes de ID)
  */
 router.get('/email/:email', async (req, res) => {
   try {
@@ -63,6 +62,30 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
     res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Actualizar usuario por ID
+ */
+router.put('/:id', async (req, res) => {
+  try {
+    const updateData = { ...req.body };
+
+    if (updateData.password) {
+      const saltRounds = 10;
+      updateData.password = bcrypt.hashSync(updateData.password, saltRounds);
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, { new: true });
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    res.json({ message: 'Usuario actualizado', user: updatedUser });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
