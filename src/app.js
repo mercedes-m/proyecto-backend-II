@@ -4,12 +4,13 @@ import { Server } from 'socket.io';
 import mongoose from 'mongoose';
 
 import passport from 'passport';
-import { initializePassport } from './config/passportConfig.js';  // Ajusta ruta si es distinta
+import { initializePassport } from './config/passportConfig.js'; 
 
 import productRouter from './routes/productRouter.js';
 import cartRouter from './routes/cartRouter.js';
 import viewsRouter from './routes/viewsRouter.js';
 import userRouter from './routes/userRouter.js'; 
+import sessionRouter from './routes/sessionRouter.js';
 import __dirname from './utils/constantsUtil.js';
 import websocket from './websocket.js';
 
@@ -38,6 +39,7 @@ app.use(passport.initialize());
 app.use('/api/products', productRouter);
 app.use('/api/carts', cartRouter);
 app.use('/api/users', userRouter); 
+app.use('/api/sessions', sessionRouter);
 app.use('/', viewsRouter);
 
 const PORT = 8080;
