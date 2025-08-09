@@ -9,7 +9,7 @@ const router = Router();
 router.post('/', async (req, res) => {
   try {
     const userData = req.body;
-    // Aqui se puede encriptar la contraseña antes de guardarla
+    // TODO: Aquí puedes encriptar la contraseña antes de guardarla
     const newUser = new User(userData);
     await newUser.save();
     res.status(201).json({ message: 'Usuario creado', user: newUser });
@@ -31,11 +31,11 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * Buscar usuario por ID
+ * Buscar usuario por email (poner antes de la búsqueda por ID)
  */
-router.get('/:id', async (req, res) => {
+router.get('/email/:email', async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findOne({ email: req.params.email });
     if (!user) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
@@ -46,11 +46,11 @@ router.get('/:id', async (req, res) => {
 });
 
 /**
- * Buscar usuario por email
+ * Buscar usuario por ID
  */
-router.get('/email/:email', async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.params.email });
+    const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
