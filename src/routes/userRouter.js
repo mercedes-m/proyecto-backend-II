@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { User } from '../dao/models/User.js';
+import bcrypt from 'bcrypt';
 
 const router = Router();
 
@@ -9,9 +10,16 @@ const router = Router();
 router.post('/', async (req, res) => {
   try {
     const userData = req.body;
-    // TODO: Aquí puedes encriptar la contraseña antes de guardarla
+
+    // Encriptar la contraseña antes de guardar
+    if (userData.password) {
+      const saltRounds = 10;
+      userData.password = bcrypt.hashSync(userData.password, saltRounds);
+    }
+
     const newUser = new User(userData);
     await newUser.save();
+
     res.status(201).json({ message: 'Usuario creado', user: newUser });
   } catch (error) {
     res.status(500).json({ error: error.message });
