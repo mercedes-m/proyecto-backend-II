@@ -3,6 +3,9 @@ import handlebars from 'express-handlebars';
 import { Server } from 'socket.io';
 import mongoose from 'mongoose';
 
+import passport from 'passport';
+import { initializePassport } from './config/passportConfig.js';  // Ajusta ruta si es distinta
+
 import productRouter from './routes/productRouter.js';
 import cartRouter from './routes/cartRouter.js';
 import viewsRouter from './routes/viewsRouter.js';
@@ -27,10 +30,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
+// Inicializar passport
+initializePassport();
+app.use(passport.initialize());
+
 // Routers
 app.use('/api/products', productRouter);
 app.use('/api/carts', cartRouter);
-app.use('/api/users', userRouter); // <-- Nueva ruta para usuarios
+app.use('/api/users', userRouter); 
 app.use('/', viewsRouter);
 
 const PORT = 8080;
