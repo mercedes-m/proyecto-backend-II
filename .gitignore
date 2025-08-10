@@ -1,5 +1,17 @@
+# Dependencias
+node_modules/
 **/node_modules
+
+# Archivos de lock
+package-lock.json
 **/package-lock.json
-/public/img/**
-products.json
-carts.json
+
+# Archivos de datos locales
+/data/products.json
+/data/carts.json
+
+# Archivos de subida de imágenes
+/public/img/
+
+# Variables de entorno
+.env
