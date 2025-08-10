@@ -35,7 +35,7 @@ router.get('/current', (req, res, next) => {
     // Quitar password antes de enviar
     const { password, ...userWithoutPassword } = user._doc;
 
-    res.json({ user });
+   res.json({ user: userWithoutPassword });
   })(req, res, next);
 });
 
