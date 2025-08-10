@@ -16,74 +16,49 @@ Antes de comenzar, asegúrate de tener instalado:
 
    ```bash
    git clone <URL_DEL_REPOSITORIO>
+
 Ingresa en la carpeta del proyecto:
-
-bash
-Copiar
-Editar
 cd proyecto-backendII
+
 Instala las dependencias:
-
-bash
-Copiar
-Editar
 npm install
-Crea un archivo .env en la raíz del proyecto con el siguiente contenido:
 
-ini
-Copiar
-Editar
+Crea un archivo .env en la raíz del proyecto con el siguiente contenido:
 PORT=8080
 MONGO_URI=mongodb://localhost:27017/entrega-final
 JWT_SECRET=tu_secreto_super_seguro
-Inicia el servidor:
 
-bash
-Copiar
-Editar
+Inicia el servidor:
 npm start
-El servidor quedará corriendo en http://localhost:8080.
+
+El servidor quedará corriendo en http://localhost:8080
 
 Endpoints principales
 Autenticación
 POST /api/sessions/register → Crear usuario
-
 POST /api/sessions/login → Iniciar sesión y recibir token JWT
-
 GET /api/sessions/current → Obtener usuario autenticado (requiere enviar token en Authorization: Bearer)
 
 Productos
 GET /api/products → Listar productos
-
 POST /api/products → Crear producto (requiere rol admin)
-
 PUT /api/products/:id → Actualizar producto
-
 DELETE /api/products/:id → Eliminar producto
 
 Carrito
 POST /api/carts → Crear carrito
-
 POST /api/carts/:cid/product/:pid → Agregar producto al carrito
-
 DELETE /api/carts/:cid/product/:pid → Eliminar producto del carrito
 
 Pruebas en Postman
 Importa la colección de Postman incluida en la carpeta postman/.
-
 Realiza primero un POST a /api/sessions/register para crear un usuario.
-
 Luego haz POST a /api/sessions/login para obtener el token JWT.
-
 Copia el token y añádelo en las peticiones que requieran autenticación usando el header:
-
-makefile
-Copiar
-Editar
 Authorization: Bearer <tu_token>
+
 Notas
 La carpeta node_modules y archivos sensibles como .env están ignorados en .gitignore.
-
 El proyecto está configurado para trabajar con MongoDB local, pero puedes modificar MONGO_URI para usar Mongo Atlas.
-
 Asegúrate de que MongoDB esté ejecutándose antes de iniciar el servidor.
+
