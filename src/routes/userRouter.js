@@ -19,8 +19,14 @@ router.post('/', async (req, res) => {
     const newUser = new User(userData);
     await newUser.save();
 
-    res.status(201).json({ message: 'Usuario creado', user: newUser });
+    // Excluir password de la respuesta
+    const { password, ...userWithoutPassword } = newUser._doc;
+
+    res.status(201).json({ message: 'Usuario creado', user: userWithoutPassword });
   } catch (error) {
+    if (error.code === 11000 && error.keyPattern?.email) {
+      return res.status(400).json({ error: 'El email ya está registrado' });
+    }
     res.status(500).json({ error: error.message });
   }
 });
@@ -31,14 +37,19 @@ router.post('/', async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const users = await User.find();
-    res.json(users);
+    // Quitar password de cada usuario
+    const usersWithoutPassword = users.map(({ _doc }) => {
+      const { password, ...userWithoutPassword } = _doc;
+      return userWithoutPassword;
+    });
+    res.json(usersWithoutPassword);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
 /**
- * Buscar usuario por email (antes de ID)
+ * Buscar usuario por email 
  */
 router.get('/email/:email', async (req, res) => {
   try {
@@ -46,7 +57,8 @@ router.get('/email/:email', async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
-    res.json(user);
+    const { password, ...userWithoutPassword } = user._doc;
+    res.json(userWithoutPassword);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -61,7 +73,8 @@ router.get('/:id', async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
-    res.json(user);
+    const { password, ...userWithoutPassword } = user._doc;
+    res.json(userWithoutPassword);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -85,7 +98,8 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
-    res.json({ message: 'Usuario actualizado', user: updatedUser });
+    const { password, ...userWithoutPassword } = updatedUser._doc;
+    res.json({ message: 'Usuario actualizado', user: userWithoutPassword });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -100,7 +114,8 @@ router.delete('/:id', async (req, res) => {
     if (!deletedUser) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
-    res.json({ message: 'Usuario eliminado', user: deletedUser });
+    const { password, ...userWithoutPassword } = deletedUser._doc;
+    res.json({ message: 'Usuario eliminado', user: userWithoutPassword });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
