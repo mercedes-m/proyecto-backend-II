@@ -13,7 +13,7 @@ Antes de comenzar, asegúrate de tener instalado:
 ## Instalación
 
 1. Clona el repositorio desde GitHub:  
-   git clone <URL_DEL_REPOSITORIO>
+   git clone <https://github.com/mercedes-m/proyecto-backend-II.git>
 
 2. Ingresa en la carpeta del proyecto:  
    cd proyecto-backendII
