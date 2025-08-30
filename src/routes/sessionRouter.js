@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import passport from 'passport';
 import jwt from 'jsonwebtoken';
+import { UserDTO } from '../dtos/UserDTO.js';
 
 const router = Router();
-
 const JWT_SECRET = 'tu_secreto_super_seguro'; 
 const JWT_EXPIRES_IN = '1h'; // Duración del token
 
@@ -15,10 +15,8 @@ router.post('/register', (req, res, next) => {
       return res.status(400).json({ error: info?.message || 'Error en registro' });
     }
 
-    // Quitar contraseña antes de enviar
-    const { password, ...userWithoutPassword } = user._doc;
-
-    res.status(201).json({ message: 'Usuario registrado', user: userWithoutPassword });
+    const userDTO = new UserDTO(user._doc); // Se usa DTO
+    res.status(201).json({ message: 'Usuario registrado', user: userDTO });
   })(req, res, next);
 });
 
@@ -38,7 +36,7 @@ router.post('/login', (req, res, next) => {
   })(req, res, next);
 });
 
-// Ruta para validar token y obtener usuario actual
+// Ruta /current usando DTO
 router.get('/current', (req, res, next) => {
   passport.authenticate('current', { session: false }, (err, user, info) => {
     if (err) return next(err);
@@ -46,10 +44,8 @@ router.get('/current', (req, res, next) => {
       return res.status(401).json({ error: info?.message || 'Token inválido o expirado' });
     }
 
-    // Quitar password antes de enviar
-    const { password, ...userWithoutPassword } = user._doc;
-
-    res.json({ user: userWithoutPassword });
+    const userDTO = new UserDTO(user._doc); // Se usa DTO
+    res.json({ user: userDTO });
   })(req, res, next);
 });
 
