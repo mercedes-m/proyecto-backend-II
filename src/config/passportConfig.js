@@ -11,7 +11,36 @@ const ExtractJWT = jwt.ExtractJwt;
 const JWT_SECRET = 'tu_secreto_super_seguro'; 
 
 export const initializePassport = () => {
-  // Estrategia local para login con email y contraseña
+  // Estrategia local para registro
+  passport.use('register', new LocalStrategy(
+    {
+      usernameField: 'email',
+      passwordField: 'password',
+      passReqToCallback: true,
+      session: false
+    },
+    async (req, email, password, done) => {
+      try {
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+          return done(null, false, { message: 'El usuario ya existe' });
+        }
+
+        const hashedPassword = bcrypt.hashSync(password, 10);
+        const newUser = await User.create({
+          ...req.body,
+          email,
+          password: hashedPassword
+        });
+
+        return done(null, newUser);
+      } catch (error) {
+        return done(error);
+      }
+    }
+  ));
+
+  // Estrategia local para login
   passport.use('login', new LocalStrategy(
     {
       usernameField: 'email',
@@ -37,7 +66,7 @@ export const initializePassport = () => {
     }
   ));
 
-  // Estrategia JWT current
+  // Estrategia JWT para validar token
   passport.use('current', new JWTStrategy(
     {
       jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
@@ -55,4 +84,4 @@ export const initializePassport = () => {
       }
     }
   ));
-};  
+};
