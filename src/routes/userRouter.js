@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import { User } from '../dao/models/User.js';
+import { UserRepository } from '../repositories/UserRepository.js';
 import bcrypt from 'bcrypt';
 
 const router = Router();
+const userRepo = new UserRepository();
 
 /**
  * Crear un nuevo usuario
@@ -16,8 +17,7 @@ router.post('/', async (req, res) => {
       userData.password = bcrypt.hashSync(userData.password, saltRounds);
     }
 
-    const newUser = new User(userData);
-    await newUser.save();
+    const newUser = await userRepo.create(userData);
 
     // Excluir password de la respuesta
     const { password, ...userWithoutPassword } = newUser._doc;
@@ -36,8 +36,7 @@ router.post('/', async (req, res) => {
  */
 router.get('/', async (req, res) => {
   try {
-    const users = await User.find();
-    // Quitar password de cada usuario
+    const users = await userRepo.getAll();
     const usersWithoutPassword = users.map(({ _doc }) => {
       const { password, ...userWithoutPassword } = _doc;
       return userWithoutPassword;
@@ -49,14 +48,12 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * Buscar usuario por email 
+ * Buscar usuario por email
  */
 router.get('/email/:email', async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.params.email });
-    if (!user) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
-    }
+    const user = await userRepo.getByEmail(req.params.email);
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
     const { password, ...userWithoutPassword } = user._doc;
     res.json(userWithoutPassword);
   } catch (error) {
@@ -69,10 +66,8 @@ router.get('/email/:email', async (req, res) => {
  */
 router.get('/:id', async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-    if (!user) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
-    }
+    const user = await userRepo.getById(req.params.id);
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
     const { password, ...userWithoutPassword } = user._doc;
     res.json(userWithoutPassword);
   } catch (error) {
@@ -92,11 +87,8 @@ router.put('/:id', async (req, res) => {
       updateData.password = bcrypt.hashSync(updateData.password, saltRounds);
     }
 
-    const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, { new: true });
-
-    if (!updatedUser) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
-    }
+    const updatedUser = await userRepo.update(req.params.id, updateData);
+    if (!updatedUser) return res.status(404).json({ error: 'Usuario no encontrado' });
 
     const { password, ...userWithoutPassword } = updatedUser._doc;
     res.json({ message: 'Usuario actualizado', user: userWithoutPassword });
@@ -110,10 +102,8 @@ router.put('/:id', async (req, res) => {
  */
 router.delete('/:id', async (req, res) => {
   try {
-    const deletedUser = await User.findByIdAndDelete(req.params.id);
-    if (!deletedUser) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
-    }
+    const deletedUser = await userRepo.delete(req.params.id);
+    if (!deletedUser) return res.status(404).json({ error: 'Usuario no encontrado' });
     const { password, ...userWithoutPassword } = deletedUser._doc;
     res.json({ message: 'Usuario eliminado', user: userWithoutPassword });
   } catch (error) {
