@@ -37,26 +37,7 @@ export const initializePassport = () => {
     }
   ));
 
-  // Estrategia JWT para validar token y proteger rutas
-  passport.use('jwt', new JWTStrategy(
-    {
-      jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
-      secretOrKey: JWT_SECRET
-    },
-    async (jwtPayload, done) => {
-      try {
-        const user = await User.findById(jwtPayload.id);
-        if (user) {
-          return done(null, user);
-        }
-        return done(null, false);
-      } catch (error) {
-        return done(error);
-      }
-    }
-  ));
-
-  // Estrategia current para endpoint /api/sessions/current
+  // Estrategia JWT current
   passport.use('current', new JWTStrategy(
     {
       jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
@@ -74,4 +55,4 @@ export const initializePassport = () => {
       }
     }
   ));
-};
+};  
