@@ -7,6 +7,21 @@ const router = Router();
 const JWT_SECRET = 'tu_secreto_super_seguro'; 
 const JWT_EXPIRES_IN = '1h'; // Duración del token
 
+// Registro de usuario con Passport local
+router.post('/register', (req, res, next) => {
+  passport.authenticate('register', (err, user, info) => {
+    if (err) return next(err);
+    if (!user) {
+      return res.status(400).json({ error: info?.message || 'Error en registro' });
+    }
+
+    // Quitar contraseña antes de enviar
+    const { password, ...userWithoutPassword } = user._doc;
+
+    res.status(201).json({ message: 'Usuario registrado', user: userWithoutPassword });
+  })(req, res, next);
+});
+
 // Login con Passport local
 router.post('/login', (req, res, next) => {
   passport.authenticate('login', (err, user, info) => {
@@ -23,11 +38,10 @@ router.post('/login', (req, res, next) => {
   })(req, res, next);
 });
 
-// Ruta para validar token y obtener usuario actual con manejo personalizado de error
+// Ruta para validar token y obtener usuario actual
 router.get('/current', (req, res, next) => {
   passport.authenticate('current', { session: false }, (err, user, info) => {
     if (err) return next(err);
-
     if (!user) {
       return res.status(401).json({ error: info?.message || 'Token inválido o expirado' });
     }
@@ -35,7 +49,7 @@ router.get('/current', (req, res, next) => {
     // Quitar password antes de enviar
     const { password, ...userWithoutPassword } = user._doc;
 
-   res.json({ user: userWithoutPassword });
+    res.json({ user: userWithoutPassword });
   })(req, res, next);
 });
 
