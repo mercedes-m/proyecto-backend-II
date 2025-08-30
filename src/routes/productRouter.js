@@ -1,95 +1,69 @@
 import { Router } from 'express';
-import { productDBManager } from '../dao/productDBManager.js';
+import { ProductRepository } from '../repositories/ProductRepository.js';
 import { uploader } from '../utils/multerUtil.js';
 
 const router = Router();
-const ProductService = new productDBManager();
+const productRepo = new ProductRepository();
 
+// Listar todos los productos
 router.get('/', async (req, res) => {
-    const result = await ProductService.getAllProducts(req.query);
-
-    res.send({
-        status: 'success',
-        payload: result
-    });
+  try {
+    const products = await productRepo.getAll(req.query);
+    res.json({ status: 'success', payload: products });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
 });
 
+// Obtener producto por ID
 router.get('/:pid', async (req, res) => {
-
-    try {
-        const result = await ProductService.getProductByID(req.params.pid);
-        res.send({
-            status: 'success',
-            payload: result
-        });
-    } catch (error) {
-        res.status(400).send({
-            status: 'error',
-            message: error.message
-        });
-    }
+  try {
+    const product = await productRepo.getById(req.params.pid);
+    if (!product) return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
+    res.json({ status: 'success', payload: product });
+  } catch (error) {
+    res.status(400).json({ status: 'error', message: error.message });
+  }
 });
 
+// Crear producto
 router.post('/', uploader.array('thumbnails', 3), async (req, res) => {
-
+  try {
     if (req.files) {
-        req.body.thumbnails = [];
-        req.files.forEach((file) => {
-            req.body.thumbnails.push(file.path);
-        });
+      req.body.thumbnails = req.files.map(file => file.path);
     }
 
-    try {
-        const result = await ProductService.createProduct(req.body);
-        res.send({
-            status: 'success',
-            payload: result
-        });
-    } catch (error) {
-        res.status(400).send({
-            status: 'error',
-            message: error.message
-        });
-    }
+    const newProduct = await productRepo.create(req.body);
+    res.status(201).json({ status: 'success', payload: newProduct });
+  } catch (error) {
+    res.status(400).json({ status: 'error', message: error.message });
+  }
 });
 
+// Actualizar producto
 router.put('/:pid', uploader.array('thumbnails', 3), async (req, res) => {
-
+  try {
     if (req.files) {
-        req.body.thumbnails = [];
-        req.files.forEach((file) => {
-            req.body.thumbnails.push(file.filename);
-        });
+      req.body.thumbnails = req.files.map(file => file.filename);
     }
 
-    try {
-        const result = await ProductService.updateProduct(req.params.pid, req.body);
-        res.send({
-            status: 'success',
-            payload: result
-        });
-    } catch (error) {
-        res.status(400).send({
-            status: 'error',
-            message: error.message
-        });
-    }
+    const updatedProduct = await productRepo.update(req.params.pid, req.body);
+    if (!updatedProduct) return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
+    res.json({ status: 'success', payload: updatedProduct });
+  } catch (error) {
+    res.status(400).json({ status: 'error', message: error.message });
+  }
 });
 
+// Eliminar producto
 router.delete('/:pid', async (req, res) => {
-
-    try {
-        const result = await ProductService.deleteProduct(req.params.pid);
-        res.send({
-            status: 'success',
-            payload: result
-        });
-    } catch (error) {
-        res.status(400).send({
-            status: 'error',
-            message: error.message
-        });
-    }
+  try {
+    const deletedProduct = await productRepo.delete(req.params.pid);
+    if (!deletedProduct) return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
+    res.json({ status: 'success', payload: deletedProduct });
+  } catch (error) {
+    res.status(400).json({ status: 'error', message: error.message });
+  }
 });
 
 export default router;
