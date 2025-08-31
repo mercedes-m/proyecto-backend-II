@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { UserRepository } from '../repositories/UserRepository.js';
 import bcrypt from 'bcrypt';
+import { authorize } from '../middlewares/authorization.js';
 
 const router = Router();
 const userRepo = new UserRepository();
 
 /**
- * Crear un nuevo usuario
+ * Crear un nuevo usuario (abierto, o también podrías usar authorize('admin') si solo admins crean usuarios)
  */
 router.post('/', async (req, res) => {
   try {
@@ -32,9 +33,9 @@ router.post('/', async (req, res) => {
 });
 
 /**
- * Listar todos los usuarios
+ * Listar todos los usuarios (solo admins)
  */
-router.get('/', async (req, res) => {
+router.get('/', authorize('admin'), async (req, res) => {
   try {
     const users = await userRepo.getAll();
     const usersWithoutPassword = users.map(({ _doc }) => {
@@ -48,9 +49,9 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * Buscar usuario por email
+ * Buscar usuario por email (solo admins)
  */
-router.get('/email/:email', async (req, res) => {
+router.get('/email/:email', authorize('admin'), async (req, res) => {
   try {
     const user = await userRepo.getByEmail(req.params.email);
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -62,9 +63,9 @@ router.get('/email/:email', async (req, res) => {
 });
 
 /**
- * Buscar usuario por ID
+ * Buscar usuario por ID (solo admins)
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', authorize('admin'), async (req, res) => {
   try {
     const user = await userRepo.getById(req.params.id);
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -76,9 +77,9 @@ router.get('/:id', async (req, res) => {
 });
 
 /**
- * Actualizar usuario por ID
+ * Actualizar usuario por ID (solo admins)
  */
-router.put('/:id', async (req, res) => {
+router.put('/:id', authorize('admin'), async (req, res) => {
   try {
     const updateData = { ...req.body };
 
@@ -98,9 +99,9 @@ router.put('/:id', async (req, res) => {
 });
 
 /**
- * Eliminar usuario por ID
+ * Eliminar usuario por ID (solo admins)
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authorize('admin'), async (req, res) => {
   try {
     const deletedUser = await userRepo.delete(req.params.id);
     if (!deletedUser) return res.status(404).json({ error: 'Usuario no encontrado' });
