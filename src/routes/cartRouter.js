@@ -1,13 +1,14 @@
 import { Router } from 'express';
 import { ProductRepository } from '../repositories/ProductRepository.js';
 import { CartRepository } from '../repositories/CartRepository.js';
+import { authorize } from '../middlewares/authorization.js';
 
 const router = Router();
 const productRepo = new ProductRepository();
 const cartRepo = new CartRepository(productRepo);
 
 // Obtener productos de un carrito por ID
-router.get('/:cid', async (req, res) => {
+router.get('/:cid', authorize('user'), async (req, res) => {
   try {
     const cartProducts = await cartRepo.getProductsByCartId(req.params.cid);
     res.json({ status: 'success', payload: cartProducts });
@@ -17,7 +18,7 @@ router.get('/:cid', async (req, res) => {
 });
 
 // Crear un nuevo carrito
-router.post('/', async (req, res) => {
+router.post('/', authorize('user'), async (req, res) => {
   try {
     const newCart = await cartRepo.createCart();
     res.status(201).json({ status: 'success', payload: newCart });
@@ -27,7 +28,7 @@ router.post('/', async (req, res) => {
 });
 
 // Agregar producto a carrito
-router.post('/:cid/product/:pid', async (req, res) => {
+router.post('/:cid/product/:pid', authorize('user'), async (req, res) => {
   try {
     const updatedCart = await cartRepo.addProduct(req.params.cid, req.params.pid);
     res.json({ status: 'success', payload: updatedCart });
@@ -37,7 +38,7 @@ router.post('/:cid/product/:pid', async (req, res) => {
 });
 
 // Eliminar producto del carrito
-router.delete('/:cid/product/:pid', async (req, res) => {
+router.delete('/:cid/product/:pid', authorize('user'), async (req, res) => {
   try {
     const updatedCart = await cartRepo.removeProduct(req.params.cid, req.params.pid);
     res.json({ status: 'success', payload: updatedCart });
@@ -47,7 +48,7 @@ router.delete('/:cid/product/:pid', async (req, res) => {
 });
 
 // Actualizar todos los productos del carrito
-router.put('/:cid', async (req, res) => {
+router.put('/:cid', authorize('user'), async (req, res) => {
   try {
     const updatedCart = await cartRepo.updateProducts(req.params.cid, req.body.products);
     res.json({ status: 'success', payload: updatedCart });
@@ -57,7 +58,7 @@ router.put('/:cid', async (req, res) => {
 });
 
 // Actualizar cantidad de un producto en el carrito
-router.put('/:cid/product/:pid', async (req, res) => {
+router.put('/:cid/product/:pid', authorize('user'), async (req, res) => {
   try {
     const updatedCart = await cartRepo.updateProductQuantity(req.params.cid, req.params.pid, req.body.quantity);
     res.json({ status: 'success', payload: updatedCart });
@@ -67,7 +68,7 @@ router.put('/:cid/product/:pid', async (req, res) => {
 });
 
 // Eliminar todos los productos del carrito
-router.delete('/:cid', async (req, res) => {
+router.delete('/:cid', authorize('user'), async (req, res) => {
   try {
     const emptiedCart = await cartRepo.clearCart(req.params.cid);
     res.json({ status: 'success', payload: emptiedCart });
