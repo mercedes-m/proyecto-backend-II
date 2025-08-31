@@ -2,8 +2,12 @@ import express from 'express';
 import handlebars from 'express-handlebars';
 import { Server } from 'socket.io';
 import mongoose from 'mongoose';
-
 import passport from 'passport';
+import dotenv from 'dotenv';
+
+// Cargar variables de entorno
+dotenv.config();
+
 import { initializePassport } from './config/passportConfig.js'; 
 
 import productRouter from './routes/productRouter.js';
@@ -16,7 +20,8 @@ import websocket from './websocket.js';
 
 const app = express();
 
-const uri = 'mongodb://127.0.0.1:27017/entrega-final';
+// Usar la URI de .env o fallback
+const uri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/entrega-final';
 mongoose.connect(uri)
     .then(() => console.log('Conectado a MongoDB'))
     .catch(err => console.error('Error de conexión a MongoDB:', err));
@@ -42,7 +47,8 @@ app.use('/api/users', userRouter);
 app.use('/api/sessions', sessionRouter);
 app.use('/', viewsRouter);
 
-const PORT = 8080;
+// Usar puerto desde .env o fallback
+const PORT = process.env.PORT || 8080;
 const httpServer = app.listen(PORT, () => {
     console.log(`Servidor iniciado en el puerto ${PORT}`);
 });
