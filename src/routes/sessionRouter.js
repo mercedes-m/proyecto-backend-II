@@ -1,7 +1,10 @@
 import { Router } from 'express';
 import passport from 'passport';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 import { UserDTO } from '../dtos/UserDTO.js';
+import { sendPasswordResetEmail } from '../services/mailService.js';
+import User from '../dao/models/UserModel.js'; // Ajusta la ruta según tu estructura
 
 const router = Router();
 const JWT_SECRET = 'tu_secreto_super_seguro'; 
@@ -47,6 +50,60 @@ router.get('/current', (req, res, next) => {
     const userDTO = new UserDTO(user._doc); // Se usa DTO
     res.json({ user: userDTO });
   })(req, res, next);
+});
+
+
+// ================================
+// 📌 Recuperación de contraseña
+// ================================
+
+// 1️⃣ Endpoint para solicitar recuperación (envía email con token)
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    // Generar token temporal de 1h
+    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
+
+    // Enviar email con el token
+    await sendPasswordResetEmail(email, token);
+
+    res.json({ message: 'Correo de recuperación enviado' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al enviar correo de recuperación' });
+  }
+});
+
+// 2️⃣ Endpoint para resetear contraseña
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    // Verificar token
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    const user = await User.findById(decoded.id);
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    // Validar que la nueva contraseña no sea igual a la anterior
+    const isSamePassword = await bcrypt.compare(newPassword, user.password);
+    if (isSamePassword) {
+      return res.status(400).json({ error: 'La nueva contraseña no puede ser igual a la anterior' });
+    }
+
+    // Hashear nueva contraseña y guardar
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.json({ message: 'Contraseña restablecida correctamente' });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: 'Token inválido o expirado' });
+  }
 });
 
 export default router;
