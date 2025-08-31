@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import { ProductRepository } from '../repositories/ProductRepository.js';
 import { uploader } from '../utils/multerUtil.js';
+import { authorize } from '../middlewares/authorization.js';
 
 const router = Router();
 const productRepo = new ProductRepository();
 
-// Listar todos los productos
+// Listar todos los productos (abierto a todos)
 router.get('/', async (req, res) => {
   try {
     const products = await productRepo.getAll(req.query);
@@ -15,7 +16,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Obtener producto por ID
+// Obtener producto por ID (abierto a todos)
 router.get('/:pid', async (req, res) => {
   try {
     const product = await productRepo.getById(req.params.pid);
@@ -26,8 +27,8 @@ router.get('/:pid', async (req, res) => {
   }
 });
 
-// Crear producto
-router.post('/', uploader.array('thumbnails', 3), async (req, res) => {
+// Crear producto (solo admins)
+router.post('/', authorize('admin'), uploader.array('thumbnails', 3), async (req, res) => {
   try {
     if (req.files) {
       req.body.thumbnails = req.files.map(file => file.path);
@@ -40,8 +41,8 @@ router.post('/', uploader.array('thumbnails', 3), async (req, res) => {
   }
 });
 
-// Actualizar producto
-router.put('/:pid', uploader.array('thumbnails', 3), async (req, res) => {
+// Actualizar producto (solo admins)
+router.put('/:pid', authorize('admin'), uploader.array('thumbnails', 3), async (req, res) => {
   try {
     if (req.files) {
       req.body.thumbnails = req.files.map(file => file.filename);
@@ -55,8 +56,8 @@ router.put('/:pid', uploader.array('thumbnails', 3), async (req, res) => {
   }
 });
 
-// Eliminar producto
-router.delete('/:pid', async (req, res) => {
+// Eliminar producto (solo admins)
+router.delete('/:pid', authorize('admin'), async (req, res) => {
   try {
     const deletedProduct = await productRepo.delete(req.params.pid);
     if (!deletedProduct) return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
