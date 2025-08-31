@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { UserDTO } from '../dtos/UserDTO.js';
 import { sendPasswordResetEmail } from '../services/mailService.js';
-import User from '../dao/models/UserModel.js'; // Ajusta la ruta según tu estructura
+import User from '../dao/models/User.js'; 
 
 const router = Router();
 const JWT_SECRET = 'tu_secreto_super_seguro'; 
@@ -52,12 +52,9 @@ router.get('/current', (req, res, next) => {
   })(req, res, next);
 });
 
+// Recuperación de contraseña
 
-// ================================
-// 📌 Recuperación de contraseña
-// ================================
-
-// 1️⃣ Endpoint para solicitar recuperación (envía email con token)
+// Endpoint para solicitar recuperación (envía email con token)
 router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
@@ -77,7 +74,7 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
-// 2️⃣ Endpoint para resetear contraseña
+// Endpoint para resetear contraseña
 router.post('/reset-password', async (req, res) => {
   try {
     const { token, newPassword } = req.body;
