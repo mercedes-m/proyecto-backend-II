@@ -8,21 +8,24 @@ import dotenv from 'dotenv';
 // Cargar variables de entorno
 dotenv.config();
 
-import { initializePassport } from './config/passportConfig.js'; 
+import { initializePassport } from './config/passportConfig.js';
 
 import productRouter from './routes/productRouter.js';
 import cartRouter from './routes/cartRouter.js';
 import viewsRouter from './routes/viewsRouter.js';
-import userRouter from './routes/userRouter.js'; 
+import userRouter from './routes/userRouter.js';
 import sessionRouter from './routes/sessionRouter.js';
 import __dirname from './utils/constantsUtil.js';
 import websocket from './websocket.js';
 
 const app = express();
 
-// Usar la URI de .env o fallback
-const uri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/entrega-final';
-mongoose.connect(uri)
+// Conexión a MongoDB usando variable de entorno
+const MONGO_URI = process.env.MONGO_URI;
+mongoose.connect(MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
     .then(() => console.log('Conectado a MongoDB'))
     .catch(err => console.error('Error de conexión a MongoDB:', err));
 
@@ -43,14 +46,14 @@ app.use(passport.initialize());
 // Routers
 app.use('/api/products', productRouter);
 app.use('/api/carts', cartRouter);
-app.use('/api/users', userRouter); 
+app.use('/api/users', userRouter);
 app.use('/api/sessions', sessionRouter);
 app.use('/', viewsRouter);
 
-// Usar puerto desde .env o fallback
+// Usar puerto desde .env
 const PORT = process.env.PORT || 8080;
 const httpServer = app.listen(PORT, () => {
-    console.log(`Servidor iniciado en el puerto ${PORT}`);
+    console.log(`Servidor iniciado en http://localhost:${PORT}`);
 });
 
 const io = new Server(httpServer);
