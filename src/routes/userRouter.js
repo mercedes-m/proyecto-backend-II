@@ -1,30 +1,17 @@
 import { Router } from 'express';
-import { UserRepository } from '../repositories/UserRepository.js';
-import bcrypt from 'bcrypt';
+import { UserService } from '../services/UserService.js';
 import { authorize } from '../middlewares/authorization.js';
 
 const router = Router();
-const userRepo = new UserRepository();
+const userService = new UserService();
 
 /**
- * Crear un nuevo usuario
- * (solo administradores pueden crear usuarios directamente)
+ * Crear un nuevo usuario (solo admins)
  */
 router.post('/', authorize('admin'), async (req, res) => {
   try {
-    const userData = { ...req.body };
-
-    if (userData.password) {
-      const saltRounds = 10;
-      userData.password = bcrypt.hashSync(userData.password, saltRounds);
-    }
-
-    const newUser = await userRepo.create(userData);
-
-    // Excluir password de la respuesta
-    const { password, ...userWithoutPassword } = newUser._doc;
-
-    res.status(201).json({ message: 'Usuario creado', user: userWithoutPassword });
+    const newUser = await userService.createUser(req.body);
+    res.status(201).json({ message: 'Usuario creado', user: newUser });
   } catch (error) {
     if (error.code === 11000 && error.keyPattern?.email) {
       return res.status(400).json({ error: 'El email ya está registrado' });
@@ -38,12 +25,8 @@ router.post('/', authorize('admin'), async (req, res) => {
  */
 router.get('/', authorize('admin'), async (req, res) => {
   try {
-    const users = await userRepo.getAll();
-    const usersWithoutPassword = users.map(({ _doc }) => {
-      const { password, ...userWithoutPassword } = _doc;
-      return userWithoutPassword;
-    });
-    res.json(usersWithoutPassword);
+    const users = await userService.getAllUsers();
+    res.json(users);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -54,10 +37,9 @@ router.get('/', authorize('admin'), async (req, res) => {
  */
 router.get('/email/:email', authorize('admin'), async (req, res) => {
   try {
-    const user = await userRepo.getByEmail(req.params.email);
+    const user = await userService.getUserByEmail(req.params.email);
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
-    const { password, ...userWithoutPassword } = user._doc;
-    res.json(userWithoutPassword);
+    res.json(user);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -68,10 +50,9 @@ router.get('/email/:email', authorize('admin'), async (req, res) => {
  */
 router.get('/:id', authorize('admin'), async (req, res) => {
   try {
-    const user = await userRepo.getById(req.params.id);
+    const user = await userService.getUserById(req.params.id);
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
-    const { password, ...userWithoutPassword } = user._doc;
-    res.json(userWithoutPassword);
+    res.json(user);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -82,18 +63,9 @@ router.get('/:id', authorize('admin'), async (req, res) => {
  */
 router.put('/:id', authorize('admin'), async (req, res) => {
   try {
-    const updateData = { ...req.body };
-
-    if (updateData.password) {
-      const saltRounds = 10;
-      updateData.password = bcrypt.hashSync(updateData.password, saltRounds);
-    }
-
-    const updatedUser = await userRepo.update(req.params.id, updateData);
+    const updatedUser = await userService.updateUser(req.params.id, req.body);
     if (!updatedUser) return res.status(404).json({ error: 'Usuario no encontrado' });
-
-    const { password, ...userWithoutPassword } = updatedUser._doc;
-    res.json({ message: 'Usuario actualizado', user: userWithoutPassword });
+    res.json({ message: 'Usuario actualizado', user: updatedUser });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -104,10 +76,9 @@ router.put('/:id', authorize('admin'), async (req, res) => {
  */
 router.delete('/:id', authorize('admin'), async (req, res) => {
   try {
-    const deletedUser = await userRepo.delete(req.params.id);
+    const deletedUser = await userService.deleteUser(req.params.id);
     if (!deletedUser) return res.status(404).json({ error: 'Usuario no encontrado' });
-    const { password, ...userWithoutPassword } = deletedUser._doc;
-    res.json({ message: 'Usuario eliminado', user: userWithoutPassword });
+    res.json({ message: 'Usuario eliminado', user: deletedUser });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
