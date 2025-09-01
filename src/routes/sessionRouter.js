@@ -7,8 +7,10 @@ import { sendPasswordResetEmail } from '../services/mailService.js';
 import User from '../dao/models/User.js'; 
 
 const router = Router();
-const JWT_SECRET = 'tu_secreto_super_seguro'; 
-const JWT_EXPIRES_IN = '1h'; // Duración del token
+
+// Usar variables de entorno (con fallback en caso de no estar definidas)
+const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
 
 // Registro de usuario con Passport local
 router.post('/register', (req, res, next) => {
