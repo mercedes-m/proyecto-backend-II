@@ -7,11 +7,12 @@ const router = Router();
 const userRepo = new UserRepository();
 
 /**
- * Crear un nuevo usuario (abierto, o también podrías usar authorize('admin') si solo admins crean usuarios)
+ * Crear un nuevo usuario
+ * (solo administradores pueden crear usuarios directamente)
  */
-router.post('/', async (req, res) => {
+router.post('/', authorize('admin'), async (req, res) => {
   try {
-    const userData = req.body;
+    const userData = { ...req.body };
 
     if (userData.password) {
       const saltRounds = 10;
