@@ -1,25 +1,29 @@
 import { Router } from 'express';
-import { ProductRepository } from '../repositories/ProductRepository.js';
+import { ProductService } from '../services/ProductService.js';
 import { uploader } from '../utils/multerUtil.js';
 import { authorize } from '../middlewares/authorization.js';
 
 const router = Router();
-const productRepo = new ProductRepository();
+const productService = new ProductService();
 
-// Listar todos los productos (abierto a todos)
+/**
+ * Listar todos los productos (abierto a todos)
+ */
 router.get('/', async (req, res) => {
   try {
-    const products = await productRepo.getAll(req.query);
+    const products = await productService.getAllProducts(req.query);
     res.json({ status: 'success', payload: products });
   } catch (error) {
     res.status(500).json({ status: 'error', message: error.message });
   }
 });
 
-// Obtener producto por ID (abierto a todos)
+/**
+ * Obtener producto por ID (abierto a todos)
+ */
 router.get('/:pid', async (req, res) => {
   try {
-    const product = await productRepo.getById(req.params.pid);
+    const product = await productService.getProductById(req.params.pid);
     if (!product) return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
     res.json({ status: 'success', payload: product });
   } catch (error) {
@@ -27,28 +31,34 @@ router.get('/:pid', async (req, res) => {
   }
 });
 
-// Crear producto (solo admins)
+/**
+ * Crear producto (solo admins)
+ */
 router.post('/', authorize('admin'), uploader.array('thumbnails', 3), async (req, res) => {
   try {
+    const productData = { ...req.body };
     if (req.files) {
-      req.body.thumbnails = req.files.map(file => file.path);
+      productData.thumbnails = req.files.map(file => file.path);
     }
 
-    const newProduct = await productRepo.create(req.body);
+    const newProduct = await productService.createProduct(productData);
     res.status(201).json({ status: 'success', payload: newProduct });
   } catch (error) {
     res.status(400).json({ status: 'error', message: error.message });
   }
 });
 
-// Actualizar producto (solo admins)
+/**
+ * Actualizar producto (solo admins)
+ */
 router.put('/:pid', authorize('admin'), uploader.array('thumbnails', 3), async (req, res) => {
   try {
+    const productData = { ...req.body };
     if (req.files) {
-      req.body.thumbnails = req.files.map(file => file.filename);
+      productData.thumbnails = req.files.map(file => file.filename);
     }
 
-    const updatedProduct = await productRepo.update(req.params.pid, req.body);
+    const updatedProduct = await productService.updateProduct(req.params.pid, productData);
     if (!updatedProduct) return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
     res.json({ status: 'success', payload: updatedProduct });
   } catch (error) {
@@ -56,10 +66,12 @@ router.put('/:pid', authorize('admin'), uploader.array('thumbnails', 3), async (
   }
 });
 
-// Eliminar producto (solo admins)
+/**
+ * Eliminar producto (solo admins)
+ */
 router.delete('/:pid', authorize('admin'), async (req, res) => {
   try {
-    const deletedProduct = await productRepo.delete(req.params.pid);
+    const deletedProduct = await productService.deleteProduct(req.params.pid);
     if (!deletedProduct) return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
     res.json({ status: 'success', payload: deletedProduct });
   } catch (error) {
