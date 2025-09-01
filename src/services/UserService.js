@@ -7,24 +7,28 @@ export class UserService {
     this.userRepo = new UserRepository();
   }
 
-  async getAllUsers() {
+  // Listar todos los usuarios
+  async getAll() {
     const users = await this.userRepo.getAll();
     return users.map(u => new UserDTO(u));
   }
 
-  async getUserById(id) {
+  // Obtener usuario por ID
+  async getById(id) {
     const user = await this.userRepo.getById(id);
     if (!user) return null;
     return new UserDTO(user);
   }
 
-  async getUserByEmail(email) {
+  // Obtener usuario por email
+  async getByEmail(email) {
     const user = await this.userRepo.getByEmail(email);
     if (!user) return null;
     return new UserDTO(user);
   }
 
-  async createUser(userData) {
+  // Crear usuario
+  async create(userData) {
     if (userData.password) {
       const saltRounds = 10;
       userData.password = bcrypt.hashSync(userData.password, saltRounds);
@@ -33,7 +37,8 @@ export class UserService {
     return new UserDTO(user);
   }
 
-  async updateUser(id, updateData) {
+  // Actualizar usuario
+  async update(id, updateData) {
     if (updateData.password) {
       const saltRounds = 10;
       updateData.password = bcrypt.hashSync(updateData.password, saltRounds);
@@ -43,7 +48,8 @@ export class UserService {
     return new UserDTO(updatedUser);
   }
 
-  async deleteUser(id) {
+  // Eliminar usuario
+  async delete(id) {
     const deletedUser = await this.userRepo.delete(id);
     if (!deletedUser) return null;
     return new UserDTO(deletedUser);
