@@ -1,4 +1,4 @@
-import { User } from '../dao/models/User.js';
+import { User } from '../dao/models/userModel.js';
 
 export class UserRepository {
   async getAll() {
