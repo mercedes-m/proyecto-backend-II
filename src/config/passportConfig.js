@@ -1,7 +1,7 @@
 import passport from 'passport';
 import local from 'passport-local';
 import jwt from 'passport-jwt';
-import { User } from '../dao/models/User.js';
+import { User } from '../dao/models/userModel.js';
 import bcrypt from 'bcrypt';
 
 const LocalStrategy = local.Strategy;
