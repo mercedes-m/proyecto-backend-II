@@ -1,5 +1,4 @@
 import { UserService } from '../services/UserService.js';
-import { authorize } from '../middlewares/authorization.js';
 
 const userService = new UserService();
 
