@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { UserDTO } from '../dtos/UserDTO.js';
 import { sendPasswordResetEmail } from '../services/mailService.js';
-import User from '../dao/models/User.js'; 
+import User from '../dao/models/userModel.js'; 
 
 const router = Router();
 
