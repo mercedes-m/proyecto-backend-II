@@ -5,35 +5,43 @@ export class CartService {
     this.cartRepo = new CartRepository();
   }
 
-  async getAllCarts() {
+  // Listar todos los carritos
+  async getAll() {
     return await this.cartRepo.getAll();
   }
 
-  async getCartById(id) {
+  // Obtener carrito por ID
+  async getById(id) {
     return await this.cartRepo.getById(id);
   }
 
-  async createCart(cartData = {}) {
+  // Crear nuevo carrito
+  async create(cartData = {}) {
     return await this.cartRepo.create(cartData);
   }
 
-  async addProductToCart(cartId, productId, quantity = 1) {
+  // Agregar producto a un carrito
+  async addProduct(cartId, productId, quantity = 1) {
     return await this.cartRepo.addProduct(cartId, productId, quantity);
   }
 
-  async removeProductFromCart(cartId, productId) {
+  // Eliminar producto de un carrito
+  async removeProduct(cartId, productId) {
     return await this.cartRepo.removeProduct(cartId, productId);
   }
 
+  // Actualizar cantidad de un producto en un carrito
   async updateProductQuantity(cartId, productId, quantity) {
     return await this.cartRepo.updateProductQuantity(cartId, productId, quantity);
   }
 
-  async updateCartProducts(cartId, products = []) {
+  // Reemplazar todos los productos de un carrito
+  async updateProducts(cartId, products = []) {
     return await this.cartRepo.updateProducts(cartId, products);
   }
 
-  async clearCart(cartId) {
+  // Vaciar un carrito
+  async clear(cartId) {
     return await this.cartRepo.clearCart(cartId);
   }
 }
