@@ -1,72 +1,74 @@
 import { UserService } from '../services/UserService.js';
+import { UserDTO } from '../dtos/UserDTO.js';
 
 const userService = new UserService();
 
 export class UserController {
   // Crear un nuevo usuario (solo admins)
-  static async createUser(req, res) {
+  static async createUser(req, res, next) {
     try {
-      const user = await userService.createUser(req.body);
-      res.status(201).json({ message: 'Usuario creado', user });
+      const user = await userService.create(req.body);
+      const userDTO = new UserDTO(user);
+      res.status(201).json({ message: 'Usuario creado', user: userDTO });
     } catch (error) {
       if (error.code === 11000 && error.keyPattern?.email) {
-        return res.status(400).json({ error: 'El email ya está registrado' });
+        throw { status: 400, message: 'El email ya está registrado' };
       }
-      res.status(500).json({ error: error.message });
+      next(error);
     }
   }
 
   // Listar todos los usuarios (solo admins)
-  static async getAllUsers(req, res) {
+  static async getAllUsers(req, res, next) {
     try {
-      const users = await userService.getAllUsers();
+      const users = await userService.getAll();
       res.json(users);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      next(error);
     }
   }
 
   // Buscar usuario por email (solo admins)
-  static async getUserByEmail(req, res) {
+  static async getUserByEmail(req, res, next) {
     try {
-      const user = await userService.getUserByEmail(req.params.email);
-      if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+      const user = await userService.getByEmail(req.params.email);
+      if (!user) throw { status: 404, message: 'Usuario no encontrado' };
       res.json(user);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      next(error);
     }
   }
 
   // Buscar usuario por ID (solo admins)
-  static async getUserById(req, res) {
+  static async getUserById(req, res, next) {
     try {
-      const user = await userService.getUserById(req.params.id);
-      if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+      const user = await userService.getById(req.params.id);
+      if (!user) throw { status: 404, message: 'Usuario no encontrado' };
       res.json(user);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      next(error);
     }
   }
 
   // Actualizar usuario por ID (solo admins)
-  static async updateUser(req, res) {
+  static async updateUser(req, res, next) {
     try {
-      const updatedUser = await userService.updateUser(req.params.id, req.body);
-      if (!updatedUser) return res.status(404).json({ error: 'Usuario no encontrado' });
+      const updatedUser = await userService.update(req.params.id, req.body);
+      if (!updatedUser) throw { status: 404, message: 'Usuario no encontrado' };
       res.json({ message: 'Usuario actualizado', user: updatedUser });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      next(error);
     }
   }
 
   // Eliminar usuario por ID (solo admins)
-  static async deleteUser(req, res) {
+  static async deleteUser(req, res, next) {
     try {
-      const deletedUser = await userService.deleteUser(req.params.id);
-      if (!deletedUser) return res.status(404).json({ error: 'Usuario no encontrado' });
+      const deletedUser = await userService.delete(req.params.id);
+      if (!deletedUser) throw { status: 404, message: 'Usuario no encontrado' };
       res.json({ message: 'Usuario eliminado', user: deletedUser });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      next(error);
     }
   }
 }
