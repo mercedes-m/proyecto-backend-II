@@ -20,7 +20,7 @@ import websocket from './websocket.js';
 
 const app = express();
 
-// Conexión a MongoDB usando variable de entorno
+// Conexión a MongoDB
 const MONGO_URI = process.env.MONGO_URI;
 mongoose.connect(MONGO_URI, {
     useNewUrlParser: true,
@@ -50,7 +50,7 @@ app.use('/api/users', userRouter);
 app.use('/api/sessions', sessionRouter);
 app.use('/', viewsRouter);
 
-// Usar puerto desde .env
+// Server + WebSocket
 const PORT = process.env.PORT || 8080;
 const httpServer = app.listen(PORT, () => {
     console.log(`Servidor iniciado en http://localhost:${PORT}`);
@@ -58,3 +58,5 @@ const httpServer = app.listen(PORT, () => {
 
 const io = new Server(httpServer);
 websocket(io);
+
+export default app;
