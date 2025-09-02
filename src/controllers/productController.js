@@ -1,4 +1,5 @@
 import { ProductService } from '../services/ProductService.js';
+import { ProductDTO } from '../dtos/ProductDTO.js';
 import { uploader } from '../utils/multerUtil.js';
 
 const productService = new ProductService();
@@ -8,7 +9,8 @@ export class ProductController {
   static async getAllProducts(req, res) {
     try {
       const products = await productService.getAllProducts(req.query);
-      res.json({ status: 'success', payload: products });
+      const productsDTO = products.map(p => new ProductDTO(p));
+      res.json({ status: 'success', payload: productsDTO });
     } catch (error) {
       res.status(500).json({ status: 'error', message: error.message });
     }
@@ -19,7 +21,7 @@ export class ProductController {
     try {
       const product = await productService.getProductById(req.params.pid);
       if (!product) return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
-      res.json({ status: 'success', payload: product });
+      res.json({ status: 'success', payload: new ProductDTO(product) });
     } catch (error) {
       res.status(400).json({ status: 'error', message: error.message });
     }
@@ -32,7 +34,7 @@ export class ProductController {
         req.body.thumbnails = req.files.map(file => file.path);
       }
       const newProduct = await productService.createProduct(req.body);
-      res.status(201).json({ status: 'success', payload: newProduct });
+      res.status(201).json({ status: 'success', payload: new ProductDTO(newProduct) });
     } catch (error) {
       res.status(400).json({ status: 'error', message: error.message });
     }
@@ -46,7 +48,7 @@ export class ProductController {
       }
       const updatedProduct = await productService.updateProduct(req.params.pid, req.body);
       if (!updatedProduct) return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
-      res.json({ status: 'success', payload: updatedProduct });
+      res.json({ status: 'success', payload: new ProductDTO(updatedProduct) });
     } catch (error) {
       res.status(400).json({ status: 'error', message: error.message });
     }
@@ -57,7 +59,7 @@ export class ProductController {
     try {
       const deletedProduct = await productService.deleteProduct(req.params.pid);
       if (!deletedProduct) return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
-      res.json({ status: 'success', payload: deletedProduct });
+      res.json({ status: 'success', payload: new ProductDTO(deletedProduct) });
     } catch (error) {
       res.status(400).json({ status: 'error', message: error.message });
     }
