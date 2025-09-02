@@ -13,90 +13,76 @@ const userService = new UserService();
 
 export class SessionController {
   // Registro de usuario
-  static async register(req, res) {
+  static async register(req, res, next) {
     try {
       const user = await userService.create(req.body);
-
       const userDTO = new UserDTO(user);
       res.status(201).json({ message: 'Usuario registrado', user: userDTO });
     } catch (error) {
       if (error.code === 11000 && error.keyPattern?.email) {
-        return res.status(400).json({ error: 'El email ya está registrado' });
+        throw { status: 400, message: 'El email ya está registrado' };
       }
-      res.status(500).json({ error: error.message });
+      next(error);
     }
   }
 
   // Login y generación de JWT
-  static async login(req, res) {
-    try {
-      const { email, password } = req.body;
-      const user = await userService.getByEmail(email);
-      if (!user) return res.status(401).json({ error: 'Credenciales inválidas' });
+  static async login(req, res, next) {
+    const { email, password } = req.body;
+    const user = await userService.getByEmail(email);
+    if (!user) throw { status: 401, message: 'Credenciales inválidas' };
 
-      // Validar contraseña
-      const validPassword = await userService.validatePassword(user, password);
-      if (!validPassword) return res.status(401).json({ error: 'Credenciales inválidas' });
+    const validPassword = await userService.validatePassword(user, password);
+    if (!validPassword) throw { status: 401, message: 'Credenciales inválidas' };
 
-      const payload = { id: user.id, email: user.email, role: user.role };
-      const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    const payload = { id: user.id, email: user.email, role: user.role };
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
-      res.json({ message: 'Login exitoso', token });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
+    res.json({ message: 'Login exitoso', token });
   }
 
   // Obtener usuario actual a partir del token
-  static async current(req, res) {
+  static async current(req, res, next) {
     try {
       const user = new UserDTO(req.user);
       res.json({ user });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      next(error);
     }
   }
 
   // Solicitar recuperación de contraseña
-  static async forgotPassword(req, res) {
-    try {
-      const { email } = req.body;
-      const user = await userService.getByEmail(email);
-      if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+  static async forgotPassword(req, res, next) {
+    const { email } = req.body;
+    const user = await userService.getByEmail(email);
+    if (!user) throw { status: 404, message: 'Usuario no encontrado' };
 
-      // Generar token temporal 1h
-      const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1h' });
+    await sendPasswordResetEmail(email, token);
 
-      // Enviar email
-      await sendPasswordResetEmail(email, token);
-
-      res.json({ message: 'Correo de recuperación enviado' });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
+    res.json({ message: 'Correo de recuperación enviado' });
   }
 
   // Resetear contraseña
-  static async resetPassword(req, res) {
+  static async resetPassword(req, res, next) {
     try {
       const { token, newPassword } = req.body;
       const decoded = jwt.verify(token, JWT_SECRET);
 
       const user = await userService.getById(decoded.id);
-      if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+      if (!user) throw { status: 404, message: 'Usuario no encontrado' };
 
-      // Validar que la nueva contraseña no sea igual a la anterior
       const samePassword = await userService.validatePassword(user, newPassword);
-      if (samePassword) {
-        return res.status(400).json({ error: 'La nueva contraseña no puede ser igual a la anterior' });
-      }
+      if (samePassword) throw { status: 400, message: 'La nueva contraseña no puede ser igual a la anterior' };
 
-      // Actualizar contraseña (el servicio debería hashearla internamente)
       await userService.update(user.id, { password: newPassword });
 
       res.json({ message: 'Contraseña restablecida correctamente' });
     } catch (error) {
-      res.status(400).json({ error: 'Token inválido o expirado' });
+      if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+        throw { status: 400, message: 'Token inválido o expirado' };
+      }
+      next(error);
     }
   }
 }
