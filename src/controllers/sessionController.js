@@ -15,7 +15,7 @@ export class SessionController {
   // Registro de usuario
   static async register(req, res) {
     try {
-      const user = await userService.createUser(req.body);
+      const user = await userService.create(req.body); 
       res.status(201).json({ message: 'Usuario registrado', user });
     } catch (error) {
       if (error.code === 11000 && error.keyPattern?.email) {
@@ -29,7 +29,7 @@ export class SessionController {
   static async login(req, res) {
     try {
       const { email, password } = req.body;
-      const user = await userService.getUserByEmail(email);
+      const user = await userService.getByEmail(email); 
       if (!user) return res.status(401).json({ error: 'Credenciales inválidas' });
 
       // Validar contraseña
@@ -59,7 +59,7 @@ export class SessionController {
   static async forgotPassword(req, res) {
     try {
       const { email } = req.body;
-      const user = await userService.getUserByEmail(email);
+      const user = await userService.getByEmail(email);
       if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
 
       // Generar token temporal 1h
@@ -80,10 +80,10 @@ export class SessionController {
       const { token, newPassword } = req.body;
       const decoded = jwt.verify(token, JWT_SECRET);
 
-      const user = await userService.getUserById(decoded.id);
+      const user = await userService.getById(decoded.id); 
       if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
 
-      const result = await userService.updateUser(user.id, { password: newPassword });
+      const result = await userService.update(user.id, { password: newPassword }); 
       res.json({ message: 'Contraseña restablecida correctamente', user: result });
     } catch (error) {
       res.status(400).json({ error: 'Token inválido o expirado' });
