@@ -52,7 +52,7 @@ app.use('/api/sessions', sessionRouter);
 app.use('/', viewsRouter);
 
 // Middleware global de manejo de errores
-app.use(errorHandler); // <-- agregado al final
+app.use(errorHandler);
 
 // Server + WebSocket
 const PORT = process.env.PORT || 8080;
