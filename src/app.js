@@ -15,6 +15,7 @@ import cartRouter from './routes/cartRouter.js';
 import viewsRouter from './routes/viewsRouter.js';
 import userRouter from './routes/userRouter.js';
 import sessionRouter from './routes/sessionRouter.js';
+import ticketRouter from './routes/ticketRouter.js';
 import __dirname from './utils/constantsUtil.js';
 import websocket from './websocket.js';
 import { errorHandler } from './middlewares/errorHandler.js'; // <-- importamos el middleware
@@ -49,6 +50,7 @@ app.use('/api/products', productRouter);
 app.use('/api/carts', cartRouter);
 app.use('/api/users', userRouter);
 app.use('/api/sessions', sessionRouter);
+app.use('/api/tickets', ticketRouter);
 app.use('/', viewsRouter);
 
 // Middleware global de manejo de errores
