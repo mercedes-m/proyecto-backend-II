@@ -1,38 +1,33 @@
 import { Router } from 'express';
 import passport from 'passport';
-import {
-  registerUser,
-  loginUser,
-  getCurrentUser,
-  forgotPassword,
-  resetPassword,
-} from '../controllers/sessionController.js';
+import { SessionController } from '../controllers/sessionController.js';
+import { authorize } from '../middlewares/authorization.js';
 
 const router = Router();
 
-// Registro de usuario con Passport local
-router.post('/register', (req, res, next) => {
-  passport.authenticate('register', (err, user, info) =>
-    registerUser(req, res, next, err, user, info)
-  )(req, res, next);
-});
+// Registro de usuario (usa estrategia "register")
+router.post(
+  '/register',
+  passport.authenticate('register', { session: false }),
+  SessionController.register
+);
 
-// Login con Passport local
-router.post('/login', (req, res, next) => {
-  passport.authenticate('login', (err, user, info) =>
-    loginUser(req, res, next, err, user, info)
-  )(req, res, next);
-});
+// Login (usa estrategia "login")
+router.post(
+  '/login',
+  passport.authenticate('login', { session: false }),
+  SessionController.login
+);
 
-// Ruta /current usando DTO
-router.get('/current', (req, res, next) => {
-  passport.authenticate('current', { session: false }, (err, user, info) =>
-    getCurrentUser(req, res, next, err, user, info)
-  )(req, res, next);
-});
+// Usuario actual con DTO (usa estrategia "current")
+router.get(
+  '/current',
+  passport.authenticate('current', { session: false }),
+  SessionController.current
+);
 
 // Recuperación de contraseña
-router.post('/forgot-password', forgotPassword);
-router.post('/reset-password', resetPassword);
+router.post('/forgot-password', SessionController.forgotPassword);
+router.post('/reset-password', SessionController.resetPassword);
 
 export default router;
