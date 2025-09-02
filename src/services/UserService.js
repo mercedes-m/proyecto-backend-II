@@ -54,4 +54,10 @@ export class UserService {
     if (!deletedUser) return null;
     return new UserDTO(deletedUser);
   }
+
+  // Nuevo método para validar contraseña en login
+  async validatePassword(userDTO, plainPassword) {
+    // userDTO contiene la password hasheada interna
+    return bcrypt.compareSync(plainPassword, userDTO._password || userDTO.password);
+  }
 }
