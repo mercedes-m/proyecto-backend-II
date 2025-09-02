@@ -17,6 +17,7 @@ import userRouter from './routes/userRouter.js';
 import sessionRouter from './routes/sessionRouter.js';
 import __dirname from './utils/constantsUtil.js';
 import websocket from './websocket.js';
+import { errorHandler } from './middlewares/errorHandler.js'; // <-- importamos el middleware
 
 const app = express();
 
@@ -49,6 +50,9 @@ app.use('/api/carts', cartRouter);
 app.use('/api/users', userRouter);
 app.use('/api/sessions', sessionRouter);
 app.use('/', viewsRouter);
+
+// Middleware global de manejo de errores
+app.use(errorHandler); // <-- agregado al final
 
 // Server + WebSocket
 const PORT = process.env.PORT || 8080;
