@@ -1,30 +1,40 @@
-import passport from 'passport';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 /**
  * Middleware de autorización por roles
- * @param {...string} rolesPermitidos - Roles que pueden acceder (opcional). 
+ * @param {...string} rolesPermitidos 
  * Si no se pasan roles, solo valida que el usuario esté autenticado.
  */
 export const authorize = (...rolesPermitidos) => {
   return (req, res, next) => {
-    passport.authenticate('current', { session: false }, (err, user, info) => {
-      if (err) return next(err);
+    try {
+      const authHeader = req.headers.authorization;
 
-      if (!user) {
-        return res
-          .status(401)
-          .json({ error: info?.message || 'Token inválido o expirado' });
+      if (!authHeader) {
+        return res.status(401).json({ error: 'Token no proporcionado' });
       }
 
-      // Si no se pasaron roles, basta con estar autenticado
-      if (rolesPermitidos.length > 0 && !rolesPermitidos.includes(user.role)) {
+      const token = authHeader.split(' ')[1]; // formato: "Bearer <token>"
+      const decoded = jwt.verify(token, JWT_SECRET);
+
+      // Guardamos al usuario decodificado en req.user
+      req.user = decoded;
+
+      // Si hay roles definidos, validamos
+      if (rolesPermitidos.length > 0 && !rolesPermitidos.includes(decoded.role)) {
         return res
           .status(403)
           .json({ error: 'Acceso denegado: no tienes permisos suficientes' });
       }
 
-      req.user = user; // dejamos al usuario disponible en req
       next();
-    })(req, res, next);
+    } catch (error) {
+      return res.status(401).json({ error: 'Token inválido o expirado' });
+    }
   };
 };
