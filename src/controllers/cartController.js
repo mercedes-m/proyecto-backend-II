@@ -1,4 +1,5 @@
 import { CartService } from '../services/CartService.js';
+import { CartDTO } from '../dtos/CartDTO.js';
 
 const cartService = new CartService();
 
@@ -8,7 +9,7 @@ export class CartController {
     try {
       const cart = await cartService.getCartById(req.params.cid);
       if (!cart) return res.status(404).json({ status: 'error', message: 'Carrito no encontrado' });
-      res.json({ status: 'success', payload: cart });
+      res.json({ status: 'success', payload: new CartDTO(cart) });
     } catch (error) {
       res.status(400).json({ status: 'error', message: error.message });
     }
@@ -18,7 +19,7 @@ export class CartController {
   static async createCart(req, res) {
     try {
       const newCart = await cartService.createCart();
-      res.status(201).json({ status: 'success', payload: newCart });
+      res.status(201).json({ status: 'success', payload: new CartDTO(newCart) });
     } catch (error) {
       res.status(400).json({ status: 'error', message: error.message });
     }
@@ -28,7 +29,7 @@ export class CartController {
   static async addProduct(req, res) {
     try {
       const updatedCart = await cartService.addProductToCart(req.params.cid, req.params.pid, req.body.quantity);
-      res.json({ status: 'success', payload: updatedCart });
+      res.json({ status: 'success', payload: new CartDTO(updatedCart) });
     } catch (error) {
       res.status(400).json({ status: 'error', message: error.message });
     }
@@ -38,7 +39,7 @@ export class CartController {
   static async removeProduct(req, res) {
     try {
       const updatedCart = await cartService.removeProductFromCart(req.params.cid, req.params.pid);
-      res.json({ status: 'success', payload: updatedCart });
+      res.json({ status: 'success', payload: new CartDTO(updatedCart) });
     } catch (error) {
       res.status(400).json({ status: 'error', message: error.message });
     }
@@ -48,7 +49,7 @@ export class CartController {
   static async updateProductQuantity(req, res) {
     try {
       const updatedCart = await cartService.updateProductQuantity(req.params.cid, req.params.pid, req.body.quantity);
-      res.json({ status: 'success', payload: updatedCart });
+      res.json({ status: 'success', payload: new CartDTO(updatedCart) });
     } catch (error) {
       res.status(400).json({ status: 'error', message: error.message });
     }
@@ -58,7 +59,7 @@ export class CartController {
   static async updateCart(req, res) {
     try {
       const updatedCart = await cartService.updateCartProducts(req.params.cid, req.body.products);
-      res.json({ status: 'success', payload: updatedCart });
+      res.json({ status: 'success', payload: new CartDTO(updatedCart) });
     } catch (error) {
       res.status(400).json({ status: 'error', message: error.message });
     }
@@ -68,7 +69,7 @@ export class CartController {
   static async clearCart(req, res) {
     try {
       const emptiedCart = await cartService.clearCart(req.params.cid);
-      res.json({ status: 'success', payload: emptiedCart });
+      res.json({ status: 'success', payload: new CartDTO(emptiedCart) });
     } catch (error) {
       res.status(400).json({ status: 'error', message: error.message });
     }
