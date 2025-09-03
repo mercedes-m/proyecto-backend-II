@@ -37,7 +37,7 @@ router.get('/:pid', async (req, res) => {
 router.post('/', authorize('admin'), uploader.array('thumbnails', 3), async (req, res) => {
   try {
     const productData = { ...req.body };
-    if (req.files) {
+    if (req.files && req.files.length > 0) {
       productData.thumbnails = req.files.map(file => file.path);
     }
 
@@ -54,8 +54,8 @@ router.post('/', authorize('admin'), uploader.array('thumbnails', 3), async (req
 router.put('/:pid', authorize('admin'), uploader.array('thumbnails', 3), async (req, res) => {
   try {
     const productData = { ...req.body };
-    if (req.files) {
-      productData.thumbnails = req.files.map(file => file.filename);
+    if (req.files && req.files.length > 0) {
+      productData.thumbnails = req.files.map(file => file.path);
     }
 
     const updatedProduct = await productService.updateProduct(req.params.pid, productData);
