@@ -5,6 +5,6 @@ const ticketRouter = Router();
 const ticketController = new TicketController();
 
 // Endpoint para generar un ticket a partir del carrito
-ticketRouter.post('/purchase/:cid', ticketController.purchaseCart.bind(ticketController));
+ticketRouter.post('/purchase/:cid', ticketController.purchase.bind(ticketController));
 
 export default ticketRouter;
