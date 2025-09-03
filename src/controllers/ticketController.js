@@ -3,7 +3,8 @@ import { TicketService } from '../services/TicketService.js';
 const ticketService = new TicketService();
 
 export class TicketController {
-  static async purchase(req, res) {
+  // Método de instancia en lugar de static
+  async purchase(req, res) {
     try {
       const { cartId } = req.body;
       const purchaserId = req.user.id; // req.user viene del middleware de auth
