@@ -6,27 +6,27 @@ export class ProductService {
   }
 
   // Listar productos con filtros y paginación
-  async getAll(query = {}) {
+  async getAllProducts(query = {}) {
     return await this.productRepo.getAll(query);
   }
 
   // Obtener producto por ID
-  async getById(id) {
+  async getProductById(id) {
     return await this.productRepo.getById(id);
   }
 
   // Crear nuevo producto
-  async create(productData) {
+  async createProduct(productData) {
     return await this.productRepo.create(productData);
   }
 
   // Actualizar producto existente
-  async update(id, updateData) {
+  async updateProduct(id, updateData) {
     return await this.productRepo.update(id, updateData);
   }
 
   // Eliminar producto por ID
-  async delete(id) {
+  async deleteProduct(id) {
     return await this.productRepo.delete(id);
   }
 }
