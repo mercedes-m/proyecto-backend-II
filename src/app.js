@@ -18,7 +18,6 @@ import sessionRouter from './routes/sessionRouter.js';
 import ticketRouter from './routes/ticketRouter.js';
 import __dirname from './utils/constantsUtil.js';
 import websocket from './websocket.js';
-import { errorHandler } from './middlewares/errorHandler.js'; // <-- importamos el middleware
 
 const app = express();
 
@@ -54,7 +53,14 @@ app.use('/api/tickets', ticketRouter);
 app.use('/', viewsRouter);
 
 // Middleware global de manejo de errores
-app.use(errorHandler);
+app.use((err, req, res, next) => {
+    console.error('Error capturado:', err);
+
+    const status = err.status || 500;
+    const message = err.message || 'Error interno del servidor';
+
+    res.status(status).json({ status: 'error', message });
+});
 
 // Server + WebSocket
 const PORT = process.env.PORT || 8080;
